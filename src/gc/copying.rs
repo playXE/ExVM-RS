@@ -11,7 +11,7 @@ pub struct CopyGC {
     black: Vec<*mut HValue>,
 }
 
-struct FormattedSize {
+pub struct FormattedSize {
     size: usize,
 }
 
@@ -39,7 +39,7 @@ impl fmt::Display for FormattedSize {
     }
 }
 
-fn formatted_size(size: usize) -> FormattedSize {
+pub fn formatted_size(size: usize) -> FormattedSize {
     FormattedSize { size }
 }
 
@@ -149,9 +149,11 @@ impl CopyGC {
 
             }
         */
-
         while scan < top {
             let size = unsafe { (*scan.to_mut_ptr::<HValue>()).size() };
+            unsafe {
+                println!("{:?}", (*scan.to_mut_ptr::<HValue>()).tag());
+            }
             self.grey.push(scan.to_mut_ptr::<HValue>());
             scan = scan.offset(size);
         }
@@ -221,6 +223,7 @@ impl CopyGC {
     }
 
     pub fn visit(&mut self, value: *mut HValue) {
+        println!("{:?}", unsafe { (*value).tag() });
         match unsafe { (*value).tag() } {
             HeapTag::Context => self.visit_ctx(value as *mut _),
             HeapTag::Function => self.visit_function(value as *mut _),
